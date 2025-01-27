@@ -60,19 +60,28 @@ def generate_cover_letter(url, pdf_path):
     client = OpenAI(api_key=get_api_key())
 
     # Extract text from the PDF
-    pdf_text = extract_pdf_text(pdf_path)
+    try:
+        pdf_text = extract_pdf_text(pdf_path)
+    except Exception as e:
+        # Handle the error
+        return f"Error extracting text from PDF: {e}"
 
     """
     # Save the pdf txt
     with open("pdf_text.txt", "w", encoding="utf-8") as f:
         f.write(pdf_text)
     """
-    prompt1 = f"""Analyze the following job description and provide the key points:
-                1. Detect the language and respond in English.
-                2. Summarize key requirements, skills, and tasks mentioned in the description.
+    job_description = get_job_description(url)
 
-                Job Description: {get_job_description(url)}
-                """
+    if job_description is None:
+        return "No job description was provided. Please check the URL and try again."
+    else:
+        prompt1 = f"""Analyze the following job description and provide the key points:
+                    1. Detect the language and respond in English.
+                    2. Summarize key requirements, skills, and tasks mentioned in the description.
+
+                    Job Description: {job_description}
+                    """
 
     completion = client.chat.completions.create(
         model="gpt-4o-mini",
